@@ -87,4 +87,4 @@ See [`digest/SKILL.md`](digest/SKILL.md) for the full pipeline. In short:
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE).
