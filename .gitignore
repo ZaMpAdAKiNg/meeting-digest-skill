@@ -1,0 +1,19 @@
+# OS / editor cruft
+.DS_Store
+*.swp
+*~
+
+# Never commit real meeting outputs — they contain private content
+*.pdf
+transcript*.txt
+transcript*.docx
+*.srt
+*.mp3
+*.mp4
+digest.md
+executive-summary.md
+technical-analysis.md
+handoff.md
+
+# ...but DO keep the skill's own digest.md template (it's under digest/SKILL.md, not a generated digest.md)
+!digest/SKILL.md
