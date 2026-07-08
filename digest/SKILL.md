@@ -1,6 +1,6 @@
 ---
 name: digest
-description: Use when the user says a meeting recording is in their Google Drive, pastes a Google Drive link to a recording/transcript, or asks to "process/digest a meeting". Downloads the recording, transcribes it, and produces a full meeting digest (executive summary, decisions, action items, executive PDF) + saves canonical artifacts. Project-agnostic. Triggers: "the meeting is in my drive", "digest the meeting", "process this recording", "digest", or a pasted drive.google.com/file/d/... link.
+description: 'Use when the user says a meeting recording is in their Google Drive, pastes a Google Drive link to a recording/transcript, or asks to "process/digest a meeting". Downloads the recording, transcribes it, and produces a full meeting digest (executive summary, decisions, action items, executive PDF) + saves canonical artifacts. Project-agnostic. Triggers: "the meeting is in my drive", "digest the meeting", "process this recording", "digest", or a pasted drive.google.com/file/d/... link.'
 ---
 
 # Meeting Digest Pipeline
