@@ -69,6 +69,15 @@ mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/digest"
 cp -R codex/digest/. "${CODEX_HOME:-$HOME/.codex}/skills/digest/"
 ```
 
+On Windows (PowerShell), install for Claude Code with:
+
+```powershell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills\digest" | Out-Null
+Copy-Item -Recurse -Force claude\digest\* "$env:USERPROFILE\.claude\skills\digest\"
+```
+
+(For Codex on Windows, use `$env:CODEX_HOME` if set, otherwise `$env:USERPROFILE\.codex`.)
+
 Restart the target harness so it discovers the skill.
 
 You can also install the skill inside a project-local skills directory if your
@@ -117,6 +126,12 @@ brew install ffmpeg pandoc python rclone poppler
 sudo apt-get install ffmpeg pandoc python3 rclone poppler-utils
 ```
 
+```powershell
+# Windows (winget); poppler/Chrome only if you generate PDFs
+winget install Gyan.FFmpeg JohnMacFarlane.Pandoc Python.Python.3.12 Rclone.Rclone
+# On Windows you can also use Chocolatey: choco install ffmpeg pandoc python rclone poppler
+```
+
 `source-metadata.json` should stay safe to inspect and share. Use labels,
 source types, MIME types, durations, stream summaries, extraction methods, and
 counts. Do not store full Drive URLs, full file IDs, personal emails, access
@@ -159,6 +174,20 @@ gitleaks detect --source . --redact --no-banner --log-opts=--all
 ```
 
 For Codex skill syntax, run the Codex skill validator if available in your setup.
+
+## Contributing
+
+Fork it, use it, make it yours. This skill is meant to be adapted to your own
+setup, harness, and meeting workflow.
+
+- **PRs are welcome** — bug fixes, a new harness variant, better prereq/install
+  steps for your OS, or workflow improvements.
+- **Open an issue** for ideas, questions, or something that broke.
+- Keep every contribution **setup-agnostic and privacy-first**: no real names,
+  emails, absolute local paths, private Drive links/file IDs, customer or
+  internal project names, transcripts, or screenshots — see the Privacy Contract
+  above and run the Maintainer Validation checks before opening a PR.
+- Not comfortable opening a PR? Just fork and adapt it freely (Apache 2.0).
 
 ## License
 
@@ -227,6 +256,15 @@ mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/digest"
 cp -R codex/digest/. "${CODEX_HOME:-$HOME/.codex}/skills/digest/"
 ```
 
+No Windows (PowerShell), instale para o Claude Code com:
+
+```powershell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills\digest" | Out-Null
+Copy-Item -Recurse -Force claude\digest\* "$env:USERPROFILE\.claude\skills\digest\"
+```
+
+(Para o Codex no Windows, use `$env:CODEX_HOME` se definido, senão `$env:USERPROFILE\.codex`.) Dependências no Windows: `winget install Gyan.FFmpeg JohnMacFarlane.Pandoc Python.Python.3.12 Rclone.Rclone`.
+
 Reinicie o harness para que ele descubra a skill.
 
 ### Uso
@@ -261,6 +299,20 @@ Este repo deve continuar reutilizável por qualquer pessoa:
 - Se um print tiver segredos ou dados sensíveis de terceiros, exclua ou redija
   antes de referenciar.
 - Mantenha a autoria pública como ZaMpA.
+
+### Contribuindo
+
+Faça fork, use, deixe do seu jeito. Esta skill existe pra ser adaptada ao seu
+setup, harness e fluxo de reuniões.
+
+- **PRs são bem-vindos** — correções, uma variante de harness nova, passos de
+  instalação/pré-requisitos melhores pro seu SO, ou melhorias no fluxo.
+- **Abra uma issue** pra ideias, dúvidas ou algo que quebrou.
+- Mantenha toda contribuição **setup-agnostic e privacy-first**: sem nomes reais,
+  emails, caminhos absolutos locais, links/IDs privados do Drive, nomes de
+  clientes ou de projetos internos, transcrições ou prints — veja o Contrato de
+  privacidade acima e rode os checks de validação antes de abrir o PR.
+- Não quer abrir PR? Só faça fork e adapte livremente (Apache 2.0).
 
 ### Licença
 
