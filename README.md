@@ -1,109 +1,267 @@
-# Meeting Digest — a Claude Code Skill
+# Meeting Digest Skill
 
-Turn a meeting recording into a clean, verified digest — automatically.
+**English** | [Português (Brasil)](#portugues-brasil)
 
-This is an [Agent Skill](https://docs.claude.com/en/docs/claude-code/skills) for
-[Claude Code](https://www.claude.com/product/claude-code). Point it at a Google
-Drive recording (or paste a Drive link) and it runs the whole pipeline end-to-end:
-locate the file → pull the transcript → write a full digest, an executive summary,
-a technical analysis and a handoff → **adversarially fact-check it against the raw
-transcript** → render branded PDFs.
+Turn a meeting recording into a clean, verified digest. Maintained by ZaMpA.
 
-It's **project-agnostic** — no hardcoded names, paths, or org details. You set a
-few parameters the first time and it remembers them per project.
+This repo ships the same workflow for two agent harnesses:
 
-## What it produces
+| Harness | Skill path | Bias |
+|---|---|---|
+| Claude Code | [`claude/digest/SKILL.md`](claude/digest/SKILL.md) | Local-first shell workflow, Drive download support, transcript/audio/PDF pipeline |
+| Codex | [`codex/digest/SKILL.md`](codex/digest/SKILL.md) | Connector-first workflow, video/audio/screenshot context, markdown-first outputs |
 
-For each meeting, under `BASE_DIR/<DATE>/`:
+The skill is setup-agnostic: it does not assume a specific person, company,
+Drive account, project, local path, or meeting provider.
 
-| File | Purpose |
-|------|---------|
-| `transcript-clean.txt` / `transcript-raw.txt` | cleaned + original transcript |
-| `digest.md` | full internal doc: summary, decisions, action items, insights |
-| `executive-summary.md` | short version for a stakeholder (CEO / client / boss) |
-| `technical-analysis.md` | analysis with verbatim quotes anchored to the transcript |
-| `handoff.md` | numbered action plan for the next session |
-| 2× PDF | executive (for the stakeholder) + complete (internal) |
+## What It Produces
 
-## Why it's different from "just summarize the transcript"
+For each meeting, under a user-selected output directory. If the user does not
+provide one, both skills create `meeting-digests/<PROJECT>/<DATE>` under the
+current working directory.
 
-- **Prefers the diarized `.docx` transcript** over re-transcribing audio (cleaner, knows who said what), with an `ffmpeg` captions path and a Whisper audio fallback.
-- **Adversarial verification step** — a second pass cross-checks numbers, names, and decision-vs-intention against the raw transcript, and marks anything not clearly in the source as *unconfirmed* instead of inventing it.
-- **Handles real-world Drive gotchas** — special characters in filenames, native Google Docs reporting `Size: -1`, and Meet transcripts that auto-delete after ~90 days.
-- **Faithful PDFs** via headless Chrome (accents and emoji survive), validated with `pdftotext`.
+| File or folder | Purpose |
+|---|---|
+| `source-metadata.json` | Non-secret source metadata used for reproducibility; excludes full URLs, file IDs, emails, tokens, and absolute paths |
+| `transcript-raw.txt` | Raw transcript, captions, or ASR output |
+| `transcript-clean.txt` | Cleaned transcript for reading and verification |
+| `screenshots/` | Timestamped screenshots from visually relevant moments |
+| `visual-references.md` | Screenshot index with timestamp and visual context |
+| `digest.md` | Full digest: summary, decisions, action items, risks, notes |
+| `executive-summary.md` | Short stakeholder-ready summary |
+| `technical-analysis.md` | Evidence-backed analysis with source anchors |
+| `handoff.md` | Numbered next-session plan |
+| PDFs | Optional; generated only when requested or when the user's workflow requires them |
 
-## Prerequisites
+## Why This Is Not Just Summarization
 
-The skill checks for these and tells the user how to install any that are missing:
-
-- [`rclone`](https://rclone.org/) with a Google Drive remote (`scope=drive`)
-- `ffmpeg` + `ffprobe`
-- [`pandoc`](https://pandoc.org/)
-- Google Chrome or Chromium (used headless for PDF rendering)
-- `python3`
-
-Install them for your platform:
-
-| OS | Command |
-|----|---------|
-| **macOS** (Homebrew) | `brew install rclone ffmpeg pandoc python` — Chrome from [google.com/chrome](https://www.google.com/chrome/) |
-| **Ubuntu / Debian** | `sudo apt update && sudo apt install -y rclone ffmpeg pandoc python3` — Chrome/Chromium via [google.com/chrome](https://www.google.com/chrome/) or `sudo apt install -y chromium-browser` |
-| **Windows** ([winget](https://learn.microsoft.com/windows/package-manager/winget/)) | `winget install Rclone.Rclone Gyan.FFmpeg JohnMacFarlane.Pandoc Python.Python.3.12 Google.Chrome` |
-
-(On Windows you can also use [Chocolatey](https://chocolatey.org/): `choco install rclone ffmpeg pandoc python googlechrome`.)
+- It prefers existing diarized transcripts when available, then captions, then
+  audio transcription.
+- It treats video and screenshots as first-class context, so UI demos, slides,
+  charts, errors, and timestamps can be referenced accurately.
+- It runs an adversarial verification pass against the raw transcript and visual
+  references before finalizing the digest.
+- It marks unclear claims as unconfirmed instead of inventing missing facts.
+- It keeps real meeting outputs out of the repo by default.
 
 ## Install
 
-Skills live in `~/.claude/skills/<name>/SKILL.md`. Clone the repo and copy the `digest/` folder into place.
-
-**macOS / Linux:**
+Clone this repo from its GitHub page:
 
 ```bash
-git clone https://github.com/<your-user>/meeting-digest-skill.git
-mkdir -p ~/.claude/skills
-cp -r meeting-digest-skill/digest ~/.claude/skills/digest
+git clone <repo-url>
+cd meeting-digest-skill
 ```
 
-**Windows (PowerShell):**
+Install the harness you use, or install both.
 
-```powershell
-git clone https://github.com/<your-user>/meeting-digest-skill.git
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null
-Copy-Item -Recurse meeting-digest-skill\digest "$env:USERPROFILE\.claude\skills\digest"
+For Claude Code:
+
+```bash
+mkdir -p ~/.claude/skills/digest
+cp -R claude/digest/. ~/.claude/skills/digest/
 ```
 
-Restart Claude Code (or start a new session) so the skill is discovered.
+For Codex:
 
-> You can also drop it into a project at `.claude/skills/digest/` to scope it to one repo, or ship it inside a plugin.
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/digest"
+cp -R codex/digest/. "${CODEX_HOME:-$HOME/.codex}/skills/digest/"
+```
+
+Restart the target harness so it discovers the skill.
+
+You can also install the skill inside a project-local skills directory if your
+harness supports project-scoped skills.
 
 ## Use
 
-Just talk to Claude Code naturally — the skill triggers on intent:
+Ask naturally:
 
-- "The meeting recording is in my Drive, make the digest."
-- Paste a `https://drive.google.com/file/d/.../view` link.
-- "Process this recording" / "digest".
+- Claude Code: "Use `/digest` on this Drive recording."
+- Codex: "Use `$digest` on this Drive recording."
+- "The meeting recording is in my Drive; create the digest."
+- Paste a `drive.google.com/file/d/...` recording link.
+- Provide a local recording, transcript, chat log, or screenshot folder.
 
-It runs autonomously and only pauses if a prerequisite is missing, it can't
-identify the file, or it hits an irreversible decision.
+The workflow runs autonomously and pauses only when a source cannot be accessed,
+a required tool is missing, the output location is ambiguous, or a destructive
+choice would be needed.
 
-## How it works
+For a small smoke test before using Drive or video, create a local transcript
+and ask the harness to digest it:
 
-See [`digest/SKILL.md`](digest/SKILL.md) for the full pipeline. In short:
+```bash
+printf 'Alice: We decided to ship Friday.\nBob: I will update the docs.\n' > /tmp/meeting-digest-sample.txt
+```
 
-1. **Locate** the recording in Drive (inspect name/size/mime *before* downloading a 700MB video).
-2. **Get the text** — diarized `.docx` → embedded captions → audio + Whisper, in that order.
-3. **Generate** the digest, executive summary, technical analysis, and handoff.
-4. **Verify** adversarially against the raw transcript.
-5. **Render** two PDFs and validate them.
-6. **Remember** the key decisions and report back which PDF to send.
+## Prerequisites
 
-## Notes & assumptions
+The exact requirements depend on the harness and source type:
 
-- Defaults to Google Meet's `Meet Recordings/` folder layout; Zoom and others vary — adjust Step 1 for your provider.
-- `BASE_DIR` defaults to `~/Documents/<PROJECT>/Meetings`; change it to your convention.
-- The PDF step references a branded `_style.css` — bring your own; an example is in [`examples/_style.css`](examples/_style.css).
+- Google Drive access through the harness connector, browser session, or `rclone`
+- `ffmpeg` and `ffprobe` for video/audio inspection and screenshots
+- `pandoc`, `textutil`, or another document converter for `.docx` transcripts
+- An available transcription path when no transcript or captions exist
+- Chrome and `pdftotext` only if PDF generation is requested
+- `python3` for small cleanup scripts when the agent chooses to use them
+
+For local-first use, install the relevant tools with your system package
+manager. Examples:
+
+```bash
+# macOS
+brew install ffmpeg pandoc python rclone poppler
+
+# Debian/Ubuntu
+sudo apt-get install ffmpeg pandoc python3 rclone poppler-utils
+```
+
+`source-metadata.json` should stay safe to inspect and share. Use labels,
+source types, MIME types, durations, stream summaries, extraction methods, and
+counts. Do not store full Drive URLs, full file IDs, personal emails, access
+tokens, absolute local paths, or private account identifiers.
+
+## Privacy Contract
+
+This repo must remain reusable by anyone:
+
+- Do not commit real recordings, transcripts, screenshots, chat logs, PDFs, or
+  generated meeting digests.
+- Do not add personal emails, private Drive links, local absolute paths, customer
+  names, internal project names, or private setup details.
+- Use placeholders in examples and documentation.
+- If a screenshot contains secrets or sensitive third-party data, exclude it or
+  redact it before referencing it.
+- Keep public authorship as ZaMpA.
+
+## Repo Layout
+
+```text
+claude/digest/SKILL.md        # Claude Code skill
+codex/digest/SKILL.md         # Codex skill
+codex/digest/agents/openai.yaml
+examples/_style.css           # Optional PDF styling example
+```
+
+## Maintainer Validation
+
+Before publishing a change, run privacy and syntax checks from the repo root:
+
+```bash
+touch /tmp/meeting-digest-private-denylist.txt
+# Add your private names, emails, project names, local paths, account IDs,
+# and any real Drive/Docs IDs you want to keep out of the public repo:
+${EDITOR:-vi} /tmp/meeting-digest-private-denylist.txt
+rg -n -f /tmp/meeting-digest-private-denylist.txt .
+gitleaks dir . --redact --no-banner
+gitleaks detect --source . --redact --no-banner --log-opts=--all
+```
+
+For Codex skill syntax, run the Codex skill validator if available in your setup.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+<a id="portugues-brasil"></a>
+
+## Português (Brasil)
+
+[English](#meeting-digest-skill) | **Português (Brasil)**
+
+Transforme uma gravação de reunião em um digest limpo e verificado. Mantido por
+ZaMpA.
+
+Este repo entrega o mesmo fluxo para dois harnesses de agente:
+
+| Harness | Caminho da skill | Foco |
+|---|---|---|
+| Claude Code | [`claude/digest/SKILL.md`](claude/digest/SKILL.md) | Fluxo local-first via shell, suporte a download do Drive, pipeline de transcrição/audio/PDF |
+| Codex | [`codex/digest/SKILL.md`](codex/digest/SKILL.md) | Fluxo connector-first, contexto de vídeo/audio/prints, saída principal em markdown |
+
+A skill é setup-agnostic: não assume pessoa, empresa, conta de Drive, projeto,
+caminho local ou provedor de reunião específico.
+
+### O que ela gera
+
+Para cada reunião, em um diretório escolhido pelo usuário. Se o usuário não
+informar um diretório, as duas skills criam
+`meeting-digests/<PROJECT>/<DATE>` dentro do diretório atual.
+
+| Arquivo ou pasta | Finalidade |
+|---|---|
+| `source-metadata.json` | Metadados não secretos da fonte; exclui URLs completas, IDs de arquivo, emails, tokens e caminhos absolutos |
+| `transcript-raw.txt` | Transcrição bruta, legendas ou ASR |
+| `transcript-clean.txt` | Transcrição limpa para leitura e validação |
+| `screenshots/` | Prints com minutagem de trechos visualmente relevantes |
+| `visual-references.md` | Índice dos prints com timestamp e contexto visual |
+| `digest.md` | Digest completo: resumo, decisões, ações, riscos, notas |
+| `executive-summary.md` | Resumo curto para stakeholder |
+| `technical-analysis.md` | Análise com evidências e referências à fonte |
+| `handoff.md` | Plano numerado para a próxima sessão |
+| PDFs | Opcional; gerado só quando solicitado ou quando o workflow do usuário exigir |
+
+### Instalação
+
+Clone este repo a partir da página dele no GitHub:
+
+```bash
+git clone <repo-url>
+cd meeting-digest-skill
+```
+
+Instale o harness que você usa, ou instale os dois.
+
+Para Claude Code:
+
+```bash
+mkdir -p ~/.claude/skills/digest
+cp -R claude/digest/. ~/.claude/skills/digest/
+```
+
+Para Codex:
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/digest"
+cp -R codex/digest/. "${CODEX_HOME:-$HOME/.codex}/skills/digest/"
+```
+
+Reinicie o harness para que ele descubra a skill.
+
+### Uso
+
+Peça naturalmente:
+
+- Claude Code: "Use `/digest` nesta gravação do Drive."
+- Codex: "Use `$digest` nesta gravação do Drive."
+- "A gravação da reunião está no meu Drive; faça o digest."
+- Cole um link `drive.google.com/file/d/...`.
+- Forneça uma gravação local, transcrição, chat ou pasta de prints.
+
+O fluxo roda de forma autônoma e só pausa quando a fonte não pode ser acessada,
+uma ferramenta obrigatória está ausente, o diretório de saída está ambíguo ou
+uma decisão destrutiva seria necessária.
+
+Para um smoke test pequeno antes de usar Drive ou vídeo, crie uma transcrição
+local e peça para o harness gerar o digest:
+
+```bash
+printf 'Alice: We decided to ship Friday.\nBob: I will update the docs.\n' > /tmp/meeting-digest-sample.txt
+```
+
+### Contrato de privacidade
+
+Este repo deve continuar reutilizável por qualquer pessoa:
+
+- Não commite gravações, transcrições, prints, chats, PDFs ou digests reais.
+- Não adicione emails pessoais, links privados do Drive, caminhos absolutos
+  locais, nomes de clientes, nomes de projetos internos ou detalhes privados de setup.
+- Use placeholders em exemplos e documentação.
+- Se um print tiver segredos ou dados sensíveis de terceiros, exclua ou redija
+  antes de referenciar.
+- Mantenha a autoria pública como ZaMpA.
+
+### Licença
+
+Apache License 2.0. Veja [LICENSE](LICENSE) e [NOTICE](NOTICE).

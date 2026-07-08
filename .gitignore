@@ -3,17 +3,40 @@
 *.swp
 *~
 
-# Never commit real meeting outputs — they contain private content
+# Never commit real meeting outputs. They can contain private content,
+# private Drive links, customer names, internal project names, or screenshots.
 *.pdf
 transcript*.txt
+transcript*.md
 transcript*.docx
+transcricao*.txt
 *.srt
+*.vtt
 *.mp3
+*.m4a
+*.wav
 *.mp4
+*.mov
+*.webm
+audio.*
+meeting.*
+recording.*
+source-metadata.json
+chat.txt
 digest.md
 executive-summary.md
+resumo-executivo.md
 technical-analysis.md
+analise-tecnica.md
 handoff.md
+visual-references.md
+referencias-visuais.md
+screenshots/
+prints/
+meeting-digests/
 
-# ...but DO keep the skill's own digest.md template (it's under digest/SKILL.md, not a generated digest.md)
-!digest/SKILL.md
+# Keep harness skill definitions.
+!claude/digest/SKILL.md
+!codex/digest/SKILL.md
+!codex/digest/agents/
+!codex/digest/agents/openai.yaml

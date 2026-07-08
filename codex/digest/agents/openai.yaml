@@ -1,0 +1,4 @@
+interface:
+  display_name: "Digest"
+  short_description: "Verified multimodal meeting digest"
+  default_prompt: "Use $digest to process a meeting recording, transcript, chat, and screenshots into a verified digest."
