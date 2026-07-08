@@ -77,10 +77,14 @@ If subagents are available, delegate this to an isolated adversarial reviewer. F
 Use a branded CSS. **If the CSS has the date in the footer (`@page @bottom-left`), UPDATE it per meeting** (common bug: inheriting the previous meeting's date). Avoid `background-clip:text` with gradient (leaks in Chrome).
 ```
 pandoc executive-summary.md -o tmp.html --css=_style.css --standalone --embed-resources
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
+# Then print to PDF with headless Chrome. The Chrome/Chromium binary path is OS-specific:
+#   macOS:   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+#   Linux:   google-chrome   (or chromium-browser / chromium)
+#   Windows: "C:\Program Files\Google\Chrome\Application\chrome.exe"
+<chrome> --headless --disable-gpu \
   --no-pdf-header-footer --print-to-pdf="Meeting <PROJECT> <DATE> — for <STAKEHOLDER>.pdf" "file://$PWD/tmp.html"
 ```
-Generate 2 PDFs: executive (for STAKEHOLDER) + complete (internal). Validate with `pdftotext` that no character is broken.
+Detect the binary for the current OS (fall back to `chromium`/`chromium-browser` on Linux). Generate 2 PDFs: executive (for STAKEHOLDER) + complete (internal). Validate with `pdftotext` that no character is broken.
 
 ## Step 6 — Memory
 Save one short memory per meeting (key decisions + action items + what changes) and update the project's memory index. Don't duplicate what's already in the docs.

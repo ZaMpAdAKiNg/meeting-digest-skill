@@ -39,18 +39,37 @@ The skill checks for these and tells the user how to install any that are missin
 - [`rclone`](https://rclone.org/) with a Google Drive remote (`scope=drive`)
 - `ffmpeg` + `ffprobe`
 - [`pandoc`](https://pandoc.org/)
-- Google Chrome (used headless for PDF rendering)
+- Google Chrome or Chromium (used headless for PDF rendering)
 - `python3`
 
-On macOS: `brew install rclone ffmpeg pandoc python`
+Install them for your platform:
+
+| OS | Command |
+|----|---------|
+| **macOS** (Homebrew) | `brew install rclone ffmpeg pandoc python` — Chrome from [google.com/chrome](https://www.google.com/chrome/) |
+| **Ubuntu / Debian** | `sudo apt update && sudo apt install -y rclone ffmpeg pandoc python3` — Chrome/Chromium via [google.com/chrome](https://www.google.com/chrome/) or `sudo apt install -y chromium-browser` |
+| **Windows** ([winget](https://learn.microsoft.com/windows/package-manager/winget/)) | `winget install Rclone.Rclone Gyan.FFmpeg JohnMacFarlane.Pandoc Python.Python.3.12 Google.Chrome` |
+
+(On Windows you can also use [Chocolatey](https://chocolatey.org/): `choco install rclone ffmpeg pandoc python googlechrome`.)
 
 ## Install
 
-Skills live in `~/.claude/skills/<name>/SKILL.md`. Copy the `digest/` folder there:
+Skills live in `~/.claude/skills/<name>/SKILL.md`. Clone the repo and copy the `digest/` folder into place.
+
+**macOS / Linux:**
 
 ```bash
 git clone https://github.com/<your-user>/meeting-digest-skill.git
+mkdir -p ~/.claude/skills
 cp -r meeting-digest-skill/digest ~/.claude/skills/digest
+```
+
+**Windows (PowerShell):**
+
+```powershell
+git clone https://github.com/<your-user>/meeting-digest-skill.git
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills" | Out-Null
+Copy-Item -Recurse meeting-digest-skill\digest "$env:USERPROFILE\.claude\skills\digest"
 ```
 
 Restart Claude Code (or start a new session) so the skill is discovered.
